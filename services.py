@@ -7,6 +7,9 @@ import csv
 import os
 from datetime import datetime
 
+# chatgpt
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 def obtener_Mensaje_whatsapp(message):
     if 'type' not in message:
@@ -30,15 +33,15 @@ def obtener_Mensaje_whatsapp(message):
 
 def enviar_Mensaje_whatsapp(data):
     try:
-        whatsapp_token = sett.whatsapp_token
-        whatsapp_url = sett.whatsapp_url
+        whatsapp_token = os.getenv("WHATSAPP_TOKEN")
+        whatsapp_url = os.getenv("WHATSAPP_URL")
         headers = {'Content-Type': 'application/json',
                    'Authorization': 'Bearer ' + whatsapp_token}
-        print("se envia ", data)
         response = requests.post(whatsapp_url,
                                  headers=headers,
                                  data=data)
 
+        print("response ->", response)
         if response.status_code == 200:
             return 'mensaje enviado', 200
         else:
@@ -229,7 +232,6 @@ def markRead_Message(messageId):
 def administrar_chatbot(text, number, messageId, name):
     text = text.lower()  # mensaje que envio el usuario
     list = []
-    print("mensaje del usuario: ", text)
 
     markRead = markRead_Message(messageId)
     list.append(markRead)
@@ -317,10 +319,6 @@ def administrar_chatbot(text, number, messageId, name):
         enviar_Mensaje_whatsapp(item)
 
 
-# chatgpt
-openai.api_key = sett.openai_key
-
-
 def generar_respuesta_chatgpt(user_message, number, espedido=False):
     messages = [{'role': 'system', 'content': """
                 Eres un asistente virtual de Joyas Boulevard, una prestigiosa joyería en Río Cuarto, Córdoba, Argentina. Tu tarea es ayudar a los clientes a explorar las categorías de productos, responder a sus preguntas y guiarlos hacia la página web joyasboulevard.com y el perfil de Instagram (@joyeriaboulevard) para obtener más información o realizar compras. Mantén siempre un tono amable y profesional. Los productos incluyen anillos, collares, pulseras, pendientes y más, todos elaborados con materiales de alta calidad. Cuando un cliente está listo para hacer un pedido, recoges los detalles y al final muestras un botón para "registrar pedido" en WhatsApp.\
@@ -346,6 +344,8 @@ def generar_respuesta_chatgpt(user_message, number, espedido=False):
         messages=messages,
         temperature=0.8
     )
+
+    print("response", response.choices[0].message["content"])
     return response.choices[0].message["content"]
 
 
@@ -354,26 +354,20 @@ def guardar_conversacion(conversation_id, number, name, user_msg, timestamp, bot
         conversations = []
         conversation = [conversation_id, number, name,
                         user_msg, bot_msg, datetime.fromtimestamp(timestamp)]
-        print('inicio')
         # Guardar las conversaciones en el archivo CSV
         with open('conversaciones.csv', 'a', newline='') as csv_file:
-            print('guardar conversacion')
             data = csv.writer(csv_file, delimiter=',')
             data.writerow(conversation)
 
         messages = get_chat_from_csv(number)
-        print('mensajes del usuario: ', messages)
     except Exception as e:
-        print(e)
         return e, 403
 
 
 def get_chat_from_csv(number):
     messages = []
-    print('get_chat_from_csv')
     with open('conversaciones.csv') as file:
         reader = csv.DictReader(file)
-        print('conversaciones.csv')
         for row in reader:
             if row['number'] == number:
                 print('number')
@@ -386,7 +380,6 @@ def get_chat_from_csv(number):
 
 def guardar_pedido(jsonPedido, number):
     # Eliminar el texto que sigue al JSON
-    print('guardar pedido')
     start_index = jsonPedido.find("{")
     end_index = jsonPedido.rfind("}")
 
@@ -397,10 +390,8 @@ def guardar_pedido(jsonPedido, number):
     pedido = json.loads(json_str)
 
     # Ahora puedes usar 'pedido' como un objeto de Python
-    print('pedido', pedido)
     with open('pedidos.csv', 'a', newline='') as file:
         writer = csv.writer(file, delimiter=',')
-        print('pedidos.csv')
         anillos = [
             f"{anillo['cantidad']} {anillo['nombre']} - {anillo['precio']} pesos" for anillo in pedido['anillos']]
         pulseras = [
