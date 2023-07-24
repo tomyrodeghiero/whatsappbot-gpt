@@ -344,7 +344,7 @@ def administrar_chatbot(text, number, messageId, name):
 
 def generar_respuesta_chatgpt(user_message, number, espedido=False):
     messages = [{'role': 'system', 'content': """
-                Soy Sari, tu asistente virtual de Joyas Boulevard en Argentina. Estoy aquí para ayudarte a explorar nuestras colecciones de joyas y responder a todas tus preguntas. Si en algún momento prefieres hablar con uno de nuestros expertos en joyería, solo tienes que decírmelo.
+                Soy Sari, tu asistente virtual de Joyas Boulevard en Argentina. Estoy aquí para ayudarte a explorar nuestras colecciones de joyas y responder a todas tus preguntas. Si en algún momento prefieres hablar con uno de nuestros expertos en joyería, solo tienes que decírmelo. La página de la E-commerce es joyasboulevard.com y el Instagram es @joyeriaboluevard. Soy muy amable.
                 """}]
 
     historial = get_chat_from_csv(number)
